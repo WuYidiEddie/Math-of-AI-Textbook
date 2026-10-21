@@ -1,6 +1,6 @@
 # 数学怎么帮我们理解 AI 训练：一本给人类读者的教程
 
-> 位置：`Math of AI Textbook/tutorial/`
+> 位置：`Math of AI Textbook/textbook/`（原 `tutorial/`，2026-10-22 更名）
 > 读者：有基本线性代数/概率直觉、但不一定学过学习理论的 AI 研究者和工程师。**不确定自己够不够格？先做 [`0.0-prereq-map.md`](0.0-prereq-map.md) §2 的自测题（20 分钟）。**
 > 写法：**纯 Markdown**；公式用 `$...$`（行内）与 `$$...$$`（行间），与项目根 `README` 的约定一致。若查看器不渲染，请在 Markdown 预览中启用 KaTeX/MathJax。
 

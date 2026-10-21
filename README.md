@@ -86,6 +86,22 @@ $$
 
 ---
 
+## 2.5 答题器成绩（持续更新）
+
+理论答题器（`verification/theory_answerer.py`）：每个候选 = 初始化切线性化模型 + 官方原协议复刻，**零拟合**（没有任何系数从题库学出）。
+
+**out-of-sample 纪律**：题库按 qid 哈希固定切成 dev/test 两半（`theory_answerer_eval.py`）；失败分析只在 dev 半区做，**headline 数字是 test 半区准确率**。预测器若在观察失败后改动，改后的 test 半区数字仍是 OOS，但要在备注里声明改动的诱因。
+
+| 日期 | 预测器版本 | 全题库（500 题） | **test 半区（258 题）** | dev 半区（242 题） | 备注 |
+|---|---|---|---|---|---|
+| 2026-10-21 | v1 惰性线性化（seed 0；48 题为 3-seed 均值） | 83.2%（416/500） | **85.7%**（221/258） | 80.6%（195/242） | 基线：随机 33.3%、max-lr 启发式 53.0%、KB 经验律自报 74–88%、标签天花板 98.5% |
+
+分族（全题库）：spiral 92.0% / tabular 86.0% / univar 85.0% / mvar 85.0% / bigram 76.0% / xor 76.0%；分题型：optimizer_only 88.1% > mixed 82.7% > architecture_only 78.8%。已证伪的改进方向：预测侧多种子（M0，48 题试点 argmin 翻转 0/48，见 `verification/m0_multiseed_result.md`）。
+
+复现：`python verification/theory_answerer.py --skip-done`（可续跑）+ `python verification/theory_answerer_eval.py`。
+
+---
+
 ## 3. 文档结构
 
 | 文件 | 内容 |

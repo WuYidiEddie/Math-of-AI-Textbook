@@ -13,6 +13,7 @@
 | `bigram_estimation_result.md` / `.json` | 上述脚本的输出（P1–P3 PASS；P4/P5 描述性） |
 | `theory_answerer.py` | 理论答题器：初始化 Jacobian → 切线性化模型 → 跑官方原协议（同 seed/minibatch/优化器/步数）→ 预测 test 指标；bigram 走在线 JVP/VJP 变体；输出 `theory_answerer.jsonl` |
 | `theory_answerer_eval.py` / `theory_answerer_result.md` | 与官方答案键对照：**全部 500 题 top-1 = 83.2%**（随机 33.3%），含分族/分题型/分优化器分解与错题表 |
+| `m0_multiseed_result.md` | M0 多种子试点（48 题 × seeds 0–2）：argmin 翻转 0/48，**预测侧种子噪声不是瓶颈，多种子不值得全量跑** |
 
 ## 复现
 

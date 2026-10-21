@@ -63,7 +63,9 @@ def main():
             except (ValueError, KeyError):
                 pass
 
-    preds = defaultdict(dict)  # qid -> letter -> record
+    preds = defaultdict(dict)  # qid -> letter -> {"pred_metric": mean over seeds, ...}
+    raw = defaultdict(list)    # (qid, letter) -> [pred_metric per seed]
+    meta = {}
     skipped = defaultdict(int)
     with open(args.jsonl, encoding="utf-8") as f:
         for line in f:
@@ -71,7 +73,14 @@ def main():
             if r.get("skipped"):
                 skipped[r["skipped"].split(":")[0]] += 1
                 continue
-            preds[r["qid"]][r["letter"]] = r
+            raw[(r["qid"], r["letter"])].append(r["pred_metric"])
+            meta.setdefault(r["qid"], r)
+    for (qid, letter), vals in raw.items():
+        base = dict(meta[qid])
+        base["letter"] = letter
+        base["pred_metric"] = sum(vals) / len(vals)
+        base["n_pred_seeds"] = len(vals)
+        preds[qid][letter] = base
 
     fam_of = {}
     qtype_of = {}
@@ -115,15 +124,37 @@ def main():
     def acc(rs):
         return sum(r["hit"] for r in rs) / len(rs) if rs else float("nan")
 
+    # deterministic dev/test split by qid hash (fixed forever; failure analysis only on dev)
+    import hashlib
+
+    def split_of(qid):
+        return "dev" if int(hashlib.md5(qid.encode()).hexdigest(), 16) % 2 == 0 else "test"
+
+    for r in results:
+        r["split"] = split_of(r["qid"])
+
     lines = []
     lines.append("# theory_answerer 评估结果\n")
+    lines.append(
+        "> 方法：每个候选 = 初始化处的切线性化模型（NTK/lazy），跑**官方原协议**（同 seed 初始化、同 "
+        "minibatch 序列、同优化器配置、同步数），取其测试指标作为预测。回归/分类用显式 Jacobian"
+        "（测试侧 256–512 点子采样）；bigram 用在线 FD-JVP/VJP 变体。多 seed 预测取均值。\n"
+        "> **out-of-sample 纪律**：预测器零拟合（没有任何系数从题库学出）。为防止「看错题改方法」的"
+        "自适应污染，题库按 qid 哈希固定切成 dev/test 两半——失败分析只在 dev 半区做，"
+        "**headline 数字是 test 半区准确率**。\n"
+    )
     lines.append(f"- 候选记录：{sum(len(c) for c in preds.values())}；题目（3 候选齐全）：{len(results)}")
     if skipped:
         lines.append(f"- 跳过：{dict(skipped)}")
     lines.append(f"- 随机基线：33.3%；KB 自报同分布约 74–88%（pack-01..04），标签天花板 98.5%\n")
 
     overall = acc(results)
+    dev_rs = [r for r in results if r["split"] == "dev"]
+    test_rs = [r for r in results if r["split"] == "test"]
     lines.append(f"## 总体 top-1 准确率：**{overall:.1%}**（{sum(r['hit'] for r in results)}/{len(results)}）\n")
+    lines.append("### out-of-sample 切分（qid 哈希固定，失败分析只许在 dev 半区做）\n")
+    lines.append(f"- **test 半区（headline OOS 数字）：{acc(test_rs):.1%}**（{sum(r['hit'] for r in test_rs)}/{len(test_rs)}）")
+    lines.append(f"- dev 半区（允许迭代）：{acc(dev_rs):.1%}（{sum(r['hit'] for r in dev_rs)}/{len(dev_rs)}）\n")
 
     lines.append("## 按族\n")
     lines.append("| 族 | n 题 | top-1 | 平均 Spearman ρ（预测 vs 实测） | 特征学习差中位 | 刀刃题占比 |")

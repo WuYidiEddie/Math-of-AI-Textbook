@@ -96,6 +96,12 @@ $$
 |---|---|---|---|---|---|
 | 2026-10-21 | v1 惰性线性化（seed 0；48 题为 3-seed 均值） | 83.2%（416/500） | **85.7%**（221/258） | 80.6%（195/242） | 基线：随机 33.3%、max-lr 启发式 53.0%、KB 经验律自报 74–88%、标签天花板 98.5% |
 
+外部题库（真·OOS，未参与任何开发）：
+
+| 日期 | 题库 | top-1 | 备注 |
+|---|---|---|---|
+| 2026-10-21 | dataflip_v1_strict（49 题，strict 翻转，标签噪声≈0） | **49.0%**（24/49） | spiral 10/10、mvar 9/10、tabular **0/9**（系统性反转）；≈ 实测 10% 截断基线（44–53%）；分析见 `verification/dataflip_result.md` |
+
 分族（全题库）：spiral 92.0% / tabular 86.0% / univar 85.0% / mvar 85.0% / bigram 76.0% / xor 76.0%；分题型：optimizer_only 88.1% > mixed 82.7% > architecture_only 78.8%。已证伪的改进方向：预测侧多种子（M0，48 题试点 argmin 翻转 0/48，见 `verification/m0_multiseed_result.md`）。
 
 复现：`python verification/theory_answerer.py --skip-done`（可续跑）+ `python verification/theory_answerer_eval.py`。

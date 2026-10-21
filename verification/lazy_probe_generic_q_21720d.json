@@ -1,0 +1,75 @@
+{
+  "qid": "q_21720d",
+  "family": "bigram_lm",
+  "candidates": {
+    "A": {
+      "candidate_id": "c_7c55cc",
+      "runs": [
+        {
+          "seed": 0,
+          "steps": 512,
+          "loss": "cross_entropy",
+          "metric_init": 4.006804943084717,
+          "metric_final": 3.7729086875915527,
+          "ntk_rel_change": 1.6467012614011765,
+          "ntk_cosine": 0.1851085611851886,
+          "lambda_max_init": 1065.535400390625
+        }
+      ],
+      "mean": {
+        "steps": 512.0,
+        "metric_init": 4.006804943084717,
+        "metric_final": 3.7729086875915527,
+        "ntk_rel_change": 1.6467012614011765,
+        "ntk_cosine": 0.1851085611851886,
+        "lambda_max_init": 1065.535400390625
+      }
+    },
+    "B": {
+      "candidate_id": "c_dd63ab",
+      "runs": [
+        {
+          "seed": 0,
+          "steps": 512,
+          "loss": "cross_entropy",
+          "metric_init": 4.029491424560547,
+          "metric_final": 3.9452919960021973,
+          "ntk_rel_change": 1.4995312243700027,
+          "ntk_cosine": 0.34382875356823206,
+          "lambda_max_init": 931.1841430664062
+        }
+      ],
+      "mean": {
+        "steps": 512.0,
+        "metric_init": 4.029491424560547,
+        "metric_final": 3.9452919960021973,
+        "ntk_rel_change": 1.4995312243700027,
+        "ntk_cosine": 0.34382875356823206,
+        "lambda_max_init": 931.1841430664062
+      }
+    },
+    "C": {
+      "candidate_id": "c_3e4702",
+      "runs": [
+        {
+          "seed": 0,
+          "steps": 512,
+          "loss": "cross_entropy",
+          "metric_init": 4.030891418457031,
+          "metric_final": 3.791726589202881,
+          "ntk_rel_change": 1.5871510356664658,
+          "ntk_cosine": 0.2773971874266863,
+          "lambda_max_init": 628.91064453125
+        }
+      ],
+      "mean": {
+        "steps": 512.0,
+        "metric_init": 4.030891418457031,
+        "metric_final": 3.791726589202881,
+        "ntk_rel_change": 1.5871510356664658,
+        "ntk_cosine": 0.2773971874266863,
+        "lambda_max_init": 628.91064453125
+      }
+    }
+  }
+}

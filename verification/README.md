@@ -14,6 +14,9 @@
 | `theory_answerer.py` | 理论答题器：初始化 Jacobian → 切线性化模型 → 跑官方原协议（同 seed/minibatch/优化器/步数）→ 预测 test 指标；bigram 走在线 JVP/VJP 变体；输出 `theory_answerer.jsonl` |
 | `theory_answerer_eval.py` / `theory_answerer_result.md` | 与官方答案键对照：**全部 500 题 top-1 = 83.2%**（随机 33.3%），含分族/分题型/分优化器分解与错题表 |
 | `m0_multiseed_result.md` | M0 多种子试点（48 题 × seeds 0–2）：argmin 翻转 0/48，**预测侧种子噪声不是瓶颈，多种子不值得全量跑** |
+| `theory_answerer_meter.jsonl` / `laziness_meter_eval.py` / `laziness_meter_result.md` | M2/M3 惰性漂移计：κ_path（路径曲率，初始化可算）与真实 NTK 变化 Spearman ρ=0.855（n=21）；但分不开答对/答错（AUROC≈0.55） |
+| `lazy_probe_generic.py` + `lazy_probe_generic_*.json` | 任意 qid 的真实短训 NTK 探针（支持 MSE/CE/大输出，FD 版 K·v） |
+| `theory_answerer_dataflip.jsonl` / `dataflip_result.md` / `truncation_curve_eval.py` | dataflip_v1_strict 真·OOS 评测（49 题 49.0%）+ 预测截断曲线 |
 
 ## 复现
 

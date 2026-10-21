@@ -1,0 +1,128 @@
+{
+  "qid": "q_11b94d",
+  "candidates": {
+    "A": {
+      "candidate_id": "c_6c95ed",
+      "dir": "D:\\research\\Science of AI Textbook\\v1.5\\v15-500q-6d4ae9b\\data\\datasets\\univariate_regression\\sym_4d5411\\candidates\\set_4096_var_fix_fix_cecee3\\c_6c95ed",
+      "runs": [
+        {
+          "seed": 0,
+          "test_mse_init": 0.4117240011692047,
+          "test_mse_final": 0.005055202171206474,
+          "param_rel_disp": 0.02526559866964817,
+          "ntk_rel_change": 7.5030534863471985,
+          "ntk_cosine": 0.8101514428853989,
+          "lambda_max_init": 34.031951904296875
+        },
+        {
+          "seed": 1,
+          "test_mse_init": 0.26218315958976746,
+          "test_mse_final": 0.0006240579532459378,
+          "param_rel_disp": 0.02562044933438301,
+          "ntk_rel_change": 15.669100403785706,
+          "ntk_cosine": 0.844433132559061,
+          "lambda_max_init": 40.43083190917969
+        },
+        {
+          "seed": 2,
+          "test_mse_init": 0.3815447986125946,
+          "test_mse_final": 0.005146628711372614,
+          "param_rel_disp": 0.026594415307044983,
+          "ntk_rel_change": 12.387288689613342,
+          "ntk_cosine": 0.7287706285715103,
+          "lambda_max_init": 27.98842430114746
+        }
+      ],
+      "mean": {
+        "test_mse_init": 0.3518173197905223,
+        "test_mse_final": 0.003608629611941675,
+        "param_rel_disp": 0.025826821103692055,
+        "ntk_rel_change": 11.853147526582083,
+        "ntk_cosine": 0.79445173467199,
+        "lambda_max_init": 34.15040270487467
+      }
+    },
+    "B": {
+      "candidate_id": "c_4d0869",
+      "dir": "D:\\research\\Science of AI Textbook\\v1.5\\v15-500q-6d4ae9b\\data\\datasets\\univariate_regression\\sym_4d5411\\candidates\\set_4096_var_fix_fix_cecee3\\c_4d0869",
+      "runs": [
+        {
+          "seed": 0,
+          "test_mse_init": 1.417935848236084,
+          "test_mse_final": 0.002318737329915166,
+          "param_rel_disp": 0.013361656107008457,
+          "ntk_rel_change": 0.1295841266401112,
+          "ntk_cosine": 0.9913123995065689,
+          "lambda_max_init": 564.3213500976562
+        },
+        {
+          "seed": 1,
+          "test_mse_init": 0.9852370023727417,
+          "test_mse_final": 0.003106409916654229,
+          "param_rel_disp": 0.015609846450388432,
+          "ntk_rel_change": 0.24946147203445435,
+          "ntk_cosine": 0.9901886731386185,
+          "lambda_max_init": 552.6082153320312
+        },
+        {
+          "seed": 2,
+          "test_mse_init": 0.8262161016464233,
+          "test_mse_final": 0.008213267661631107,
+          "param_rel_disp": 0.015434770844876766,
+          "ntk_rel_change": 0.2571981055662036,
+          "ntk_cosine": 0.9759725481271744,
+          "lambda_max_init": 531.9190673828125
+        }
+      ],
+      "mean": {
+        "test_mse_init": 1.076462984085083,
+        "test_mse_final": 0.0045461383027335005,
+        "param_rel_disp": 0.014802091134091219,
+        "ntk_rel_change": 0.21208123474692306,
+        "ntk_cosine": 0.9858245402574539,
+        "lambda_max_init": 549.6162109375
+      }
+    },
+    "C": {
+      "candidate_id": "c_d7ace4",
+      "dir": "D:\\research\\Science of AI Textbook\\v1.5\\v15-500q-6d4ae9b\\data\\datasets\\univariate_regression\\sym_4d5411\\candidates\\set_4096_var_fix_fix_cecee3\\c_d7ace4",
+      "runs": [
+        {
+          "seed": 0,
+          "test_mse_init": 0.2268410176038742,
+          "test_mse_final": 0.0001762457104632631,
+          "param_rel_disp": 0.010561984032392502,
+          "ntk_rel_change": 4.4223906099796295,
+          "ntk_cosine": 0.6924950256943703,
+          "lambda_max_init": 206.1874542236328
+        },
+        {
+          "seed": 1,
+          "test_mse_init": 0.3772125244140625,
+          "test_mse_final": 0.0001646592718316242,
+          "param_rel_disp": 0.008834668435156345,
+          "ntk_rel_change": 3.0373611748218536,
+          "ntk_cosine": 0.7511379979550838,
+          "lambda_max_init": 333.06524658203125
+        },
+        {
+          "seed": 2,
+          "test_mse_init": 0.38544121384620667,
+          "test_mse_final": 0.0001939661306096241,
+          "param_rel_disp": 0.009171515703201294,
+          "ntk_rel_change": 1.3116690926253796,
+          "ntk_cosine": 0.6988426707684994,
+          "lambda_max_init": 330.43170166015625
+        }
+      ],
+      "mean": {
+        "test_mse_init": 0.3298315852880478,
+        "test_mse_final": 0.00017829037096817046,
+        "param_rel_disp": 0.00952272272358338,
+        "ntk_rel_change": 2.9238069591422877,
+        "ntk_cosine": 0.7141585648059845,
+        "lambda_max_init": 289.8948008219401
+      }
+    }
+  }
+}

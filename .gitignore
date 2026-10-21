@@ -1,0 +1,4 @@
+# 本地备份/临时产物，不入库
+*.zip
+_smoke*.jsonl
+__pycache__/

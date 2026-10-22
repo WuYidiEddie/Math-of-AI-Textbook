@@ -1,0 +1,86 @@
+{
+  "S1": {
+    "p": 200,
+    "n": 32,
+    "T": 3000,
+    "null0": 9.198691628947836,
+    "runs": [
+      {
+        "label": "full-batch GD, no wd",
+        "drift": 6.3516757450647736e-06,
+        "drift_rel": 6.904977361211195e-07,
+        "null_norm_end": 9.198690896726324,
+        "note": "(should be ~ machine eps: exact identity)"
+      },
+      {
+        "label": "minibatch SGD, no wd, bs=16",
+        "drift": 4.189026858822381e-06,
+        "drift_rel": 4.553937698748066e-07,
+        "null_norm_end": 9.198690446214439,
+        "note": "(still in row(Phi): row(Phi_B) subset row(Phi))"
+      },
+      {
+        "label": "full-batch GD, wd=1e-3",
+        "drift": 0.4122395636999831,
+        "drift_rel": 0.04481502156270629,
+        "null_norm_end": 8.786452067029872,
+        "note": "(should decay: (1-lr*wd)^T = 0.955184)"
+      },
+      {
+        "label": "Adam, no wd",
+        "drift": 5.405421157217373,
+        "drift_rel": 0.5876293472222479,
+        "null_norm_end": 10.936105021541424,
+        "note": "(elementwise 2nd moment leaks out of row(Phi))"
+      },
+      {
+        "label": "AdamW, wd=1e-3",
+        "drift": 5.382383805266348,
+        "drift_rel": 0.5851249310639186,
+        "null_norm_end": 10.85193454824577,
+        "note": "(Adam leak + decay: (1-lr*wd)^T = 0.991040)"
+      }
+    ]
+  },
+  "S2": {
+    "train_0": 1.017078171751635e-12,
+    "train_R": 1.6158049837735129e-12,
+    "test_0": 186.77583188641321,
+    "test_R": 330.0922222243647,
+    "offset": 83.96505611418551,
+    "identity": 2.8649853916817847e-05,
+    "cross": 59.3513413440634
+  },
+  "S3": {
+    "A": {
+      "p": 264961,
+      "n": 256,
+      "decay": 0.9999999231999965,
+      "drift": 0.7459960691983387,
+      "drift_rel": 0.023258179427440906,
+      "null0": 32.07456849860671,
+      "init_test": 0.005055202552098728,
+      "init_test_vs_target": 0.005055202961218076,
+      "lazy_gd_test": 0.0005383379773807917,
+      "lazy_k_test": 0.0005585986936458842,
+      "lazy_gd_vs_target": 0.0005383380207084868,
+      "permanent_init_tax": 1.458254797809521e-05,
+      "official_test": 0.0035644070245325
+    },
+    "C": {
+      "p": 187393,
+      "n": 256,
+      "decay": 0.9999999231999965,
+      "drift": 0.331736956077873,
+      "drift_rel": 0.009506529806583364,
+      "null0": 34.89569409945383,
+      "init_test": 0.00017624571934300433,
+      "init_test_vs_target": 0.0001762459772984582,
+      "lazy_gd_test": 0.0012300058143154408,
+      "lazy_k_test": 0.0010644278733207696,
+      "lazy_gd_vs_target": 0.0012300062648119778,
+      "permanent_init_tax": 0.0004689528893315868,
+      "official_test": 0.0002226058990345
+    }
+  }
+}

@@ -18,6 +18,7 @@
 | 4 | 迭代 $T$ 步 | $\theta_T-\theta^{\ast}=(I-\eta\hat\Sigma)^{T}(\theta_0-\theta^{\ast})$ | §4 |
 | 5 | 换到 $\hat\Sigma$ 的特征基里 | 每个方向一条一维递推 $z_{T,j}=(1-\eta\lambda_j)^{T}z_{0,j}$ | §5 |
 | 6 | 找出 $\lambda_j=0$ 的方向 | 零空间：至少 $p-n$ 个方向**冻结**，永远不学 | §6 |
+| 6' | 追问"冻结"是不是被强制的 | 是推论不是约束；wd / Adam / 特征移动会打破它；初始化税 | §6.4–6.5 |
 | 7 | 算残留 | 两个"地板"：逼近地板 $A$ 与辨识地板 $I$ | §7 |
 
 > **记号提醒 1**：很多教材把 $\Phi^\top\Phi/n$ 写成 $A$。本项目不用这个记号——四项分解里 $A$ 已经被"approximation（逼近误差）"占用，混用会造成"推导时把两个 $A$ 当一个"的经典错误。本章一律写 $\hat\Sigma$（Gram 矩阵）。前置章 `0.1-linear-algebra.md` 写 $A_{\rm mat}$，指的是同一个东西。
@@ -267,6 +268,66 @@ max |Pnull (theta_T) - Pnull (theta_0)|  (frozen)   = 8.132e-15
 ||P_row (theta_T - theta*)|| = 1.237859e-08   <- the part that was learnt
 max |(I - eta*Sigma)^20000 - P_null| (limit = NULL-space projector, since (1-eta*0)^T = 1) = 6.245e-12   (T_BIG=20000)
 ```
+
+### 6.4 但"冻结"不是被强制的——三种能看见零空间的机制
+
+§6.3 的"冻结"成立，但**没有任何一行优化器代码在保证它**。它只是一个推论：
+
+$$
+\nabla L(\theta)=\frac1n\Phi^\top(\Phi\theta-y)\ \in\ \mathrm{row}(\Phi),\qquad \mathrm{row}(\Phi)\perp\mathrm{null}(\Phi).
+$$
+
+梯度恒落在行空间里，所以它在零空间方向的分量恒为 $0$——**不是"不许动"，是"看不见"**。一旦引入一个**看得见**零空间的机制，守恒就破缺。这样的机制有三个：
+
+1. **weight decay**：衰减项 $-\lambda\theta$ 加进梯度，而 $\theta$ 在零空间里有分量——零空间分量每步乘 $(1-\eta\lambda)$，**被主动缩小**；
+2. **Adam 的自适应缩放**：步长是 $\hat m/(\sqrt{\hat v}+\varepsilon)$，$\hat v$ 是 $g^2$ 的滑动平均。**行空间向量的逐元素平方不一定是行空间向量**（$g=\Phi^\top c\in\mathrm{row}(\Phi)$，但 $g_i^2=\big(\sum_j\Phi_{ij}c_j\big)^2$ 一般不在行空间里），所以这一步会**漏出**行空间；
+3. **特征学习**：上面的"零空间"指的是**初始化处**的 $J$。真实训练里 $J$ 在动，$\mathrm{null}(J_t)$ 是随时间变化的子空间，"冻结"退化成基线（正文 `01` §5.5 实测核余弦只有 $0.896$/$0.775$）。
+
+实测（脚本 `verification/zero_space_init.py` S1，合成线性模型 $p=200$、$n=32$、$\theta_0$ 随机、3000 步，$\lVert P_{\mathrm{null}}\theta_0\rVert=9.199$）：
+
+```
+  optimizer                          | drift of the null-space projection
+  ------------------------------------------------------------------------------------------------
+  full-batch GD, no wd               | ||P_null th_T - P_null th_0|| = 6.352e-06   (rel 6.905e-07)   | ||P_null th_T|| = 9.198691   (should be ~ machine eps: exact identity)
+  minibatch SGD, no wd, bs=16        | ||P_null th_T - P_null th_0|| = 4.189e-06   (rel 4.554e-07)   | ||P_null th_T|| = 9.198690   (still in row(Phi): row(Phi_B) subset row(Phi))
+  full-batch GD, wd=1e-3             | ||P_null th_T - P_null th_0|| = 4.122e-01   (rel 4.482e-02)   | ||P_null th_T|| = 8.786452   (should decay: (1-lr*wd)^T = 0.955184)
+  Adam, no wd                        | ||P_null th_T - P_null th_0|| = 5.405e+00   (rel 5.876e-01)   | ||P_null th_T|| = 10.936105   (elementwise 2nd moment leaks out of row(Phi))
+  AdamW, wd=1e-3                     | ||P_null th_T - P_null th_0|| = 5.382e+00   (rel 5.851e-01)   | ||P_null th_T|| = 10.851935   (Adam leak + decay: (1-lr*wd)^T = 0.991040)
+```
+
+读法（**实测**）：
+
+- **纯 GD 与 minibatch SGD 都精确守恒**（到 float32 机器精度）。minibatch 的梯度落在 $\mathrm{row}(\Phi_B)\subset\mathrm{row}(\Phi)$——随机性只在行空间里探索，够不到零空间；
+- **weight decay 让投影主动缩小**：相对漂移 $4.5\%$，末态 $\lVert P_{\mathrm{null}}\theta_T\rVert/\lVert P_{\mathrm{null}}\theta_0\rVert=0.9552$，和预测 $(1-\eta\lambda)^T=0.9552$ 一致到小数点后四位；
+- **Adam 漏得最多**：相对漂移 $59\%$。
+
+**结论：零空间投影不变是"设定"（纯 GD + 特征不动）的性质，不是普适定律。** 换成 AdamW 它就破缺。
+
+### 6.5 初始化税：训练误差看不见、测试误差洗不掉
+
+从 $\theta_0=0$ 和从随机 $\theta_0$ 各训到插值（同一合成模型，S2），**训练误差完全相同**，但测试误差差出一块，且两条轨迹之差**精确等于**初始化的零空间分量：
+
+```
+  train MSE, theta_0 = 0       : 1.017e-12
+  train MSE, theta_0 = random  : 1.616e-12   <- identical: Phi P_null theta_0 = 0
+  test  MSE, theta_0 = 0       : 1.868e+02   <- the I-term only
+  test  MSE, theta_0 = random  : 3.301e+02   <- I-term + the permanent init offset
+  the two runs differ ONLY in the null space: max |(f_R - f_0) - Phi_te P_null theta_0| = 2.865e-05
+  mean (Phi_te P_null theta_0)^2 = 8.397e+01   (the offset's own energy)
+  test_R - test_0 = 1.433e+02  = offset^2 (8.397e+01) + 2<residual_0, offset> (5.935e+01)
+```
+
+因为 $\Phi P_{\mathrm{null}}=0$，初始化的零空间分量对**训练误差**毫无贡献（训练曲线完全看不见它）；但测试点上 $\Phi_{\rm te}P_{\mathrm{null}}\theta_0\neq0$，它变成一个**永久偏移**。超额的测试误差 = 偏移自身的能量 $+$ 一个相关项（偏移和行空间残差不正交，因为两者来自同一个随机几何）。**这就是 §7.2 地板公式里 $\theta_0$ 那一项的几何含义；从 $\theta_0=0$ 出发恰好把这项清零，这是"从零出发"的最优性来源。**
+
+**v1.5 真题上的样子**（S3，`q_11b94d`，dev 半边）：每一道题都是随机初始化（`torch.manual_seed(seed); Model()`），优化器是 **AdamW**（lr $3\times10^{-5}$、wd $10^{-5}$、256 步、bs 16），所以"$\theta_0\neq0$"是默认情况，而且优化器看得见零空间。
+
+- weight decay 的衰减因子 $(1-\text{lr}\cdot\text{wd})^{256}=0.99999992$，可忽略；
+- 跑完官方 256 步后，零空间分量的实测漂移是 **2.3%（候选 A）/ 0.95%（候选 C）**——基本冻结，但**不是严格冻结**（Adam 漏出来的）；
+- 惰性极限下"训练永远洗不掉的初始化部分"（初始化输出里正交于可达修正的那部分，测试均方）：**A 为 $1.5\times10^{-5}$，C 为 $4.7\times10^{-4}$**。
+
+值得单独说的一条：候选 C 的这个初始化税（$4.7\times10^{-4}$）比它官方最终测试误差（$2.2\times10^{-4}$）**还大**——若特征不动，它会被卡在这块税上。但真实训练跑到了 $2.2\times10^{-4}$，**低于**这块税，因为特征在动（rich regime）。**惰性地板不是真地板**（和第 05 章 §5.6 是同一件事）。
+
+> **标签**：§6.4 的机制分析是**严格定理**（在固定特征下）；§6.4 的实测表与 §6.5 的数字是**实测**；§6.5 里 v1.5 的"初始化税"是**惰性极限基线**，不是真实训练的预测——真实训练会移动特征，把它变成基线。
 
 ---
 

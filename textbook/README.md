@@ -109,7 +109,7 @@
 | `01-what-training-is.md` | 训练到底在做什么？为什么训练误差为 0 不代表验证好？ |
 | `02-exact-case.md` | 线性/核表达式：验证误差怎么精确算？**逐步推导**（平方损失→梯度→线性递推→谱分解→零空间→两个地板）、可学窗口 |
 | `03-budget-and-curves.md` | 为什么 $T$ 和 lr 决定短预算成败？**有效步长 $\eta T$ 的推导**、学习曲线=谱的拉普拉斯变换（谱隙→指数、幂律谱→幂律）、plateau 点火时间、EoS 判据、early stopping vs 岭 |
-| `04-generalization-and-validation.md` | $p>n$ 为什么不一定坏？double descent 什么时候适用？验证集怎么比才可信？ |
+| `04-generalization-and-validation.md` | $p>n$ 为什么不一定坏？**double descent 的期望公式 $\mathbb E R_{\mathrm{te}}=\sigma^2\frac{\max(p,n)-1}{\lvert p-n\rvert-1}$ 的推导**、阈值重尾、无噪声时为何不适用、**配对差 + SE + 刀刃门槛**、验证集复用偏差 |
 | `05-function-and-architecture.md` | 目标函数的结构如何决定深度/宽度？$n$-width 和信息极限 |
 | `06-classification-and-bigram.md` | 分类和语言模型为什么不能套回归公式？margin 与熵地板 |
 | `07-case-studies.md` | 用四道 v1.5 真题演示"先算再比" |

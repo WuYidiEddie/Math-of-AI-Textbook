@@ -112,7 +112,7 @@ $$
 
 | 文件 | 内容 |
 |---|---|
-| [`textbook/`](textbook/) | **给人类读者的教程（Markdown + LaTeX 数学）**：`0.0`–`0.6` 是前置知识（谱线代、Jacobian 与梯度流、统计噪声与熵、训练实操词汇、核与 NTK、逼近论与信息极限，含 30 题自测与依赖映射），`00`–`09` 是正文（四分解、**可精确算的核情形（含从平方损失到闭式递推的逐步推导）**、预算/lr/曲线、泛化与验证、函数结构与架构、分类/bigram、四道真题、理论边界、答题器实现）。建议先读 `textbook/README.md`，不确定基础够不够就先做 `textbook/0.0-prereq-map.md` §2 |
+| [`textbook/`](textbook/) | **给人类读者的教程（Markdown + LaTeX 数学）**：`0.0`–`0.6` 是前置知识（谱线代、Jacobian 与梯度流、统计噪声与熵、训练实操词汇、核与 NTK、逼近论与信息极限，含 30 题自测与依赖映射），`00`–`09` 是正文（四分解、**可精确算的核情形（含从平方损失到闭式递推的逐步推导）**、预算/lr/曲线、**泛化与验证（含 double descent 期望公式的推导与配对比较）**、函数结构与架构、分类/bigram、四道真题、理论边界、答题器实现）。建议先读 `textbook/README.md`，不确定基础够不够就先做 `textbook/0.0-prereq-map.md` §2 |
 | [`01-formulation.md`](01-formulation.md) | 问题的严格表述；"拟合好坏"的五层含义；四类误差 $A/I/O/E/F$ 的分解；从 $f,\mathcal G$ 的性质出发的判定流程（判据/决策树）；验证集的两种含义（总体风险 vs 有限验证估计） |
 | [`02-exact-regimes.md`](02-exact-regimes.md) | 可精确求解的核心：过参数化线性回归、核/随机特征、有限步 GD 的谱滤波与有限 $n$ 精确风险、early stopping≈ridge（同尺度，非精确）、NTK/lazy、深度线性网 plateau；$p>n$ 的零空间地板；double descent 的条件与**无标签噪声时的失效**；n-width/optimal recovery 下界 |
 | [`03-frontier.md`](03-frontier.md) | 不可精确求解的前沿：逼近论（Barron/Sobolev/ReLU 区域/深度分离）、隐式偏置、算法稳定性、特征学习（lazy/rich、mean-field、μP）、分类 margin 与 CE；哪些是定理、哪些是 open problem |

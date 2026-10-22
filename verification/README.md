@@ -21,6 +21,7 @@
 | `budget_curve_derivation.py` / `budget_curve_result.md` | 核验正文 03 章：有效步长 $\eta T$ 等价、谱隙→指数弛豫（$\tau=1/(2\eta\lambda_2)$）、幂律谱→幂律曲线、EoS 阈值 $\eta\lambda_{\max}=2$、early stopping 与岭的滤波器对照、四个优化器的实测步长 |
 | `generalization_stats.py` / `generalization_stats_result.md` | 核验正文 04 章：double descent 期望 $\mathbb E R_{\mathrm{te}}=\sigma^2\frac{\max(p,n)-1}{\lvert p-n\rvert-1}$（两侧同一估计器：最小范数插值器，SVD 稳定计算）、信号项 $(1-1/\gamma)\lVert\theta^\ast\rVert^2+\sigma^2n/(p-n-1)$、阈值处期望发散而单次实现有限（重尾）、配对 vs 独立 SE、测试集噪声在配对差里的抵消、验证集复用偏差 $\sqrt{2\log K}$ 上界 |
 | `four_decomposition.py` / `four_decomposition_result.md` / `.json` | 核验正文 01 章：在 dev 半边真题 `q_11b94d` 上复刻官方协议，把 $A$/$F$/$O(T)$/$I$ 逐项测出来——平方损失 = 高斯似然（恒等式）、总体最优 = 条件均值（残差 = $\sigma^2$）、折角目标的 Runge 现象（$A$ 在训练误差里不可见）、$p>n$ 的 min-norm 零空间地板（3.224487 vs $p<n$ 的 0）、10 seeds 复算与官方 audit 对齐、学习曲线（256→4096 步，$O(T)$ 主导）、初始 NTK 谱 + 谱窗口 + 惰性极限**近**插值解（截断 SVD，含 $\mathrm{cond}(K)$）+ 核漂移、宽度扫描 $w\in\{96,192,384\}$ |
+| `architecture_approximation.py` / `architecture_approximation_result.md` / `.json` | 核验正文 05 章：$A$ 的第一个度量（类内 $L^2$ 误差 = 正交投影，QR 实现；三类表达式 × 六类目标 + 固定预算下"可负担次数随维度崩塌" 119→14→4）、真实族上分离 $A$ 与 $O(T)$（spiral/xor 的 depth×width 网格 + $1/4$、$1\times$、$4\times$ 三档预算）、失败的合成对照及其分辨率地板诊断（S2b）、信息极限 $n^{-s/d}$（闭式壳计数 vs 暴力计数、实测斜率 vs 预测 $-s/d$、高斯核 $E_n=\sqrt{\lambda_{n+1}}$）、惰性区的 $A$（初始 NTK、学习窗口 $\eta\lambda_jT\gtrsim1$、最小范数权重 $\frac1n\sum_j b_j^2/\lambda_j$、GP 后验方差恒等式：解析 $1.076\times10^{-3}$ vs 实测 $2.210\times10^{-3}$）、六个族的目标画像（回归的类内逼近误差 + 分类的 LOO 岭次数曲线） |
 
 ## 复现
 
@@ -36,6 +37,8 @@ python "Math of AI Textbook\verification\budget_curve_derivation.py"
 python "Math of AI Textbook\verification\generalization_stats.py"
 python "Math of AI Textbook\verification\four_decomposition.py"          # 约 18 分钟（10 seeds × 3 候选 + 长预算曲线）
 python "Math of AI Textbook\verification\four_decomposition.py" --quick  # 冒烟版（2 seeds、短预算）
+python "Math of AI Textbook\verification\architecture_approximation.py"          # 约 15 分钟（含 xor 4x 预算的长训练）
+python "Math of AI Textbook\verification\architecture_approximation.py" --quick  # 冒烟版
 python "Math of AI Textbook\verification\theory_answerer.py" --limit-per-family 2   # 冒烟
 python "Math of AI Textbook\verification\theory_answerer.py" --skip-done            # 全量（可续跑）
 python "Math of AI Textbook\verification\theory_answerer_eval.py"                   # 评估

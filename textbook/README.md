@@ -75,7 +75,7 @@
 3. `02-exact-case.md`（前置：`0.1` §3–§7、`0.5` §4–§6）
 4. `03-budget-and-curves.md`：$T$、lr、学习曲线、plateau、EoS（前置：`0.2` §6–§8、`0.4` §4）
 5. `04-generalization-and-validation.md`：$p>n$、double descent、验证集噪声（前置：`0.3` §3–§5、`0.6` §8–§9）
-6. `05-function-and-architecture.md`：目标结构、逼近论、$n$-width、深度/宽度（前置：`0.6` §2–§6）
+6. `05-function-and-architecture.md`：目标结构、**$A$ 的闭式（正交投影）**、$n$-width 与 $n^{-s/d}$ 的推导、深度/宽度在真实族上的实测、惰性区的 $A$（前置：`0.6` §2–§6、`0.5` §4–§7）
 7. `06-classification-and-bigram.md`：CE、margin、熵地板（前置：`0.3` §7–§9、`0.4` §7–§8）
 8. `07-case-studies.md`（前置：`0.4` 全章）
 9. `09-how-to-build-answerer.md`：怎么把理论变成自动答题器（可选，偏工程；前置：`0.2` §4–§5、`0.5` §8–§9、§12）
@@ -110,7 +110,7 @@
 | `02-exact-case.md` | 线性/核表达式：验证误差怎么精确算？**逐步推导**（平方损失→梯度→线性递推→谱分解→零空间→两个地板）、可学窗口 |
 | `03-budget-and-curves.md` | 为什么 $T$ 和 lr 决定短预算成败？**有效步长 $\eta T$ 的推导**、学习曲线=谱的拉普拉斯变换（谱隙→指数、幂律谱→幂律）、plateau 点火时间、EoS 判据、early stopping vs 岭 |
 | `04-generalization-and-validation.md` | $p>n$ 为什么不一定坏？**double descent 的期望公式 $\mathbb E R_{\mathrm{te}}=\sigma^2\frac{\max(p,n)-1}{\lvert p-n\rvert-1}$ 的推导**、阈值重尾、无噪声时为何不适用、**配对差 + SE + 刀刃门槛**、验证集复用偏差 |
-| `05-function-and-architecture.md` | 目标函数的结构如何决定深度/宽度？$n$-width 和信息极限 |
+| `05-function-and-architecture.md` | 目标函数的结构如何决定深度/宽度？**逼近误差 $A$ 作为正交投影的闭式（QR，零优化）**、**固定预算下"结构匹配 > 类的大小"**、**信息极限 $n^{-s/d}$ 的五行推导与格点精确计数**、**在真实族上把 $A$ 与 $O(T)$ 拆开（spiral 深赢、xor 深输）**、**惰性区的 $A$ = 最小范数权重 $\frac1n\sum_j b_j^2/\lambda_j$ 与 GP 后验方差恒等式**、六个族的目标画像 |
 | `06-classification-and-bigram.md` | 分类和语言模型为什么不能套回归公式？margin 与熵地板 |
 | `07-case-studies.md` | 用四道 v1.5 真题演示"先算再比" |
 | `08-limits-and-next.md` | 哪些问题数学还没解决？怎么把理论和实测结合？ |

@@ -104,11 +104,11 @@ $$
 
 岭回归 $\hat\theta_\lambda=(\Phi^\top\Phi+n\lambda I)^{-1}\Phi^\top y$，测试风险是 $\lambda$ 的偏差-方差曲线；$\lambda\to0$ 给出最小范数极限，$\lambda$ 大给出强收缩。
 
-GD 的 early stopping 与岭回归的关系（**谱滤波视角**）：$T$ 步 GD 的滤波因子是 $(1-\eta\lambda_j)^T$；岭的滤波因子是 $\lambda_j/(\lambda_j+\lambda)$。在小 $\eta$ 下
+GD 的 early stopping 与岭回归的关系（**谱滤波视角**）：$T$ 步 GD 的**残余**滤波因子是 $(1-\eta\lambda_j)^T$；岭的**残余**滤波因子是 $\lambda/(\lambda_j+\lambda)$（保留的份额是 $\lambda_j/(\lambda_j+\lambda)$）。在小 $\eta$ 下，取 $\lambda_{\rm eff}=1/(\eta T)$，
 $$
-(1-\eta\lambda_j)^T\approx e^{-\eta\lambda_jT}\approx \frac{\lambda_j}{\lambda_j+1/(\eta T)},
+(1-\eta\lambda_j)^T\approx e^{-\eta\lambda_jT}\approx \frac{1}{1+\eta\lambda_jT}=\frac{\lambda_{\rm eff}}{\lambda_j+\lambda_{\rm eff}},
 $$
-即 **$T$ 步 early stopping 与岭参数 $\lambda_{\rm eff}\approx1/(\eta T)$ 同尺度**。**注意：这是粗略对应，不是精确等价**——GD 滤波是 $\mu$ 的多项式，ridge 滤波是有理函数，二者只在两端渐近一致；数值校准显示 $\lambda_{\rm eff}$ 与真正最优 $\lambda^*$ 可差 1.5–2.2 倍（见 `notes/exact-formulas.md` §2.7）。因此：
+即 **$T$ 步 early stopping 与岭参数 $\lambda_{\rm eff}\approx1/(\eta T)$ 同尺度**（两边比较的必须是同一个量：残余对残余、保留对保留；把 GD 的残余和岭的保留并排写会得到错误结论）。**注意：这是粗略对应，不是精确等价**——GD 滤波是 $\mu$ 的多项式，ridge 滤波是有理函数，二者只在两端渐近一致；数值校准显示 $\lambda_{\rm eff}$ 与真正最优 $\lambda^*$ 可差 1.5–2.2 倍（见 `notes/exact-formulas.md` §2.7），在 $\eta T\lambda_j\gtrsim1$ 的区域两边可差一个量级以上（见 `textbook/03-budget-and-curves.md` §7.2）。因此：
 - 用它做**量级换算/趋势判断**可以；
 - 用它做**精确数值预测**不行。
 "训练步数 = 正则化强度"的正确表述是：**在 $p>n$ 插值区，$T$ 起正则化作用，最优 $T$ 由验证误差的 U 型曲线决定**。但在**无噪声核/lazy**情形，总体曲线对 $T$ 单调下降（没有 U 型），early stopping 不必要；U 型只在有噪声/有限样本 aliasing/特征学习时出现。

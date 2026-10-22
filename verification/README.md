@@ -18,6 +18,7 @@
 | `lazy_probe_generic.py` + `lazy_probe_generic_*.json` | 任意 qid 的真实短训 NTK 探针（支持 MSE/CE/大输出，FD 版 K·v） |
 | `theory_answerer_dataflip.jsonl` / `dataflip_result.md` / `truncation_curve_eval.py` | dataflip_v1_strict 真·OOS 评测（49 题 49.0%）+ 预测截断曲线 |
 | `exact_case_derivation.py` / `exact_case_result.md` | 逐条核验正文 02 章的推导链：∇L=Σ̂(θ−θ*)、θ_T−θ*=(I−ηΣ̂)^T(θ_0−θ*)、逐方向滤波、零空间冻结与极限投影、两个地板（逼近/辨识）、步长稳定性、闭式预测测试误差、超额风险公式、"平方损失=条件均值" |
+| `budget_curve_derivation.py` / `budget_curve_result.md` | 核验正文 03 章：有效步长 $\eta T$ 等价、谱隙→指数弛豫（$\tau=1/(2\eta\lambda_2)$）、幂律谱→幂律曲线、EoS 阈值 $\eta\lambda_{\max}=2$、early stopping 与岭的滤波器对照、四个优化器的实测步长 |
 
 ## 复现
 
@@ -29,6 +30,7 @@ python "Math of AI Textbook\verification\lazy_probe.py" --qid q_11b94d --seeds 0
 python "Math of AI Textbook\verification\lazy_probe.py" --qid q_aef977 --seeds 0,1,2
 python "Math of AI Textbook\verification\bigram_estimation.py"
 python "Math of AI Textbook\verification\exact_case_derivation.py"
+python "Math of AI Textbook\verification\budget_curve_derivation.py"
 python "Math of AI Textbook\verification\theory_answerer.py" --limit-per-family 2   # 冒烟
 python "Math of AI Textbook\verification\theory_answerer.py" --skip-done            # 全量（可续跑）
 python "Math of AI Textbook\verification\theory_answerer_eval.py"                   # 评估

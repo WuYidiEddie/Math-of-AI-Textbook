@@ -20,6 +20,7 @@
 | `exact_case_derivation.py` / `exact_case_result.md` | 逐条核验正文 02 章的推导链：∇L=Σ̂(θ−θ*)、θ_T−θ*=(I−ηΣ̂)^T(θ_0−θ*)、逐方向滤波、零空间冻结与极限投影、两个地板（逼近/辨识）、步长稳定性、闭式预测测试误差、超额风险公式、"平方损失=条件均值" |
 | `budget_curve_derivation.py` / `budget_curve_result.md` | 核验正文 03 章：有效步长 $\eta T$ 等价、谱隙→指数弛豫（$\tau=1/(2\eta\lambda_2)$）、幂律谱→幂律曲线、EoS 阈值 $\eta\lambda_{\max}=2$、early stopping 与岭的滤波器对照、四个优化器的实测步长 |
 | `generalization_stats.py` / `generalization_stats_result.md` | 核验正文 04 章：double descent 期望 $\mathbb E R_{\mathrm{te}}=\sigma^2\frac{\max(p,n)-1}{\lvert p-n\rvert-1}$（两侧同一估计器：最小范数插值器，SVD 稳定计算）、信号项 $(1-1/\gamma)\lVert\theta^\ast\rVert^2+\sigma^2n/(p-n-1)$、阈值处期望发散而单次实现有限（重尾）、配对 vs 独立 SE、测试集噪声在配对差里的抵消、验证集复用偏差 $\sqrt{2\log K}$ 上界 |
+| `four_decomposition.py` / `four_decomposition_result.md` / `.json` | 核验正文 01 章：在 dev 半边真题 `q_11b94d` 上复刻官方协议，把 $A$/$F$/$O(T)$/$I$ 逐项测出来——平方损失 = 高斯似然（恒等式）、总体最优 = 条件均值（残差 = $\sigma^2$）、折角目标的 Runge 现象（$A$ 在训练误差里不可见）、$p>n$ 的 min-norm 零空间地板（3.224487 vs $p<n$ 的 0）、10 seeds 复算与官方 audit 对齐、学习曲线（256→4096 步，$O(T)$ 主导）、初始 NTK 谱 + 谱窗口 + 惰性极限**近**插值解（截断 SVD，含 $\mathrm{cond}(K)$）+ 核漂移、宽度扫描 $w\in\{96,192,384\}$ |
 
 ## 复现
 
@@ -33,6 +34,8 @@ python "Math of AI Textbook\verification\bigram_estimation.py"
 python "Math of AI Textbook\verification\exact_case_derivation.py"
 python "Math of AI Textbook\verification\budget_curve_derivation.py"
 python "Math of AI Textbook\verification\generalization_stats.py"
+python "Math of AI Textbook\verification\four_decomposition.py"          # 约 18 分钟（10 seeds × 3 候选 + 长预算曲线）
+python "Math of AI Textbook\verification\four_decomposition.py" --quick  # 冒烟版（2 seeds、短预算）
 python "Math of AI Textbook\verification\theory_answerer.py" --limit-per-family 2   # 冒烟
 python "Math of AI Textbook\verification\theory_answerer.py" --skip-done            # 全量（可续跑）
 python "Math of AI Textbook\verification\theory_answerer_eval.py"                   # 评估

@@ -112,13 +112,13 @@ $$
 
 | 文件 | 内容 |
 |---|---|
-| [`textbook/`](textbook/) | **给人类读者的教程（Markdown + LaTeX 数学）**：`0.0`–`0.6` 是前置知识（谱线代、Jacobian 与梯度流、统计噪声与熵、训练实操词汇、核与 NTK、逼近论与信息极限，含 30 题自测与依赖映射），`00`–`09` 是正文（四分解、**可精确算的核情形（含从平方损失到闭式递推的逐步推导）**、预算/lr/曲线、**泛化与验证（含 double descent 期望公式的推导与配对比较）**、函数结构与架构、分类/bigram、四道真题、理论边界、答题器实现）。建议先读 `textbook/README.md`，不确定基础够不够就先做 `textbook/0.0-prereq-map.md` §2 |
+| [`textbook/`](textbook/) | **给人类读者的教程（Markdown + LaTeX 数学）**：`0.0`–`0.6` 是前置知识（谱线代、Jacobian 与梯度流、统计噪声与熵、训练实操词汇、核与 NTK、逼近论与信息极限，含 30 题自测与依赖映射），`00`–`09` 是正文（**训练=选函数（平方损失的高斯似然来历 → 条件均值 → 噪声地板；GD 从 0 出发收敛到最小范数插值解 → 零空间地板；在真题 q_11b94d 上把 $A$/$F$/$O(T)$/$I$ 逐项测出来）**、四分解、**可精确算的核情形（含从平方损失到闭式递推的逐步推导）**、预算/lr/曲线、**泛化与验证（含 double descent 期望公式的推导与配对比较）**、函数结构与架构、分类/bigram、四道真题、理论边界、答题器实现）。建议先读 `textbook/README.md`，不确定基础够不够就先做 `textbook/0.0-prereq-map.md` §2 |
 | [`01-formulation.md`](01-formulation.md) | 问题的严格表述；"拟合好坏"的五层含义；四类误差 $A/I/O/E/F$ 的分解；从 $f,\mathcal G$ 的性质出发的判定流程（判据/决策树）；验证集的两种含义（总体风险 vs 有限验证估计） |
 | [`02-exact-regimes.md`](02-exact-regimes.md) | 可精确求解的核心：过参数化线性回归、核/随机特征、有限步 GD 的谱滤波与有限 $n$ 精确风险、early stopping≈ridge（同尺度，非精确）、NTK/lazy、深度线性网 plateau；$p>n$ 的零空间地板；double descent 的条件与**无标签噪声时的失效**；n-width/optimal recovery 下界 |
 | [`03-frontier.md`](03-frontier.md) | 不可精确求解的前沿：逼近论（Barron/Sobolev/ReLU 区域/深度分离）、隐式偏置、算法稳定性、特征学习（lazy/rich、mean-field、μP）、分类 margin 与 CE；哪些是定理、哪些是 open problem |
 | [`04-benchmark-testbed.md`](04-benchmark-testbed.md) | 用 v1.5 题库做 testbed：六个族的 $f$/$\mathcal G$ 性质、理论预测的 dominant term、可计算 pipeline（初始化 NTK + 目标谱 + 滤波）、与旧 empirical law 的关系、可证伪检验 |
 | [`05-formalization-and-coverage.md`](05-formalization-and-coverage.md) | **编码自查、机器验证、Lean 状态与"理论够不够解 v1.5"的诚实评估**；含两道代表题（`q_11b94d` / `q_aef977`）的 lazy 探针结果 |
-| [`verification/`](verification/) | `verify_symbolic.py`（SymPy 精确验证 10 条代数骨架）+ `lazy_probe.py`（真实 v1.5 候选的 NTK 变化探针） |
+| [`verification/`](verification/) | `verify_symbolic.py`（SymPy 精确验证 10 条代数骨架）+ `lazy_probe.py`（真实 v1.5 候选的 NTK 变化探针）+ `four_decomposition.py`（在真题 q_11b94d 上逐项测量 $A$/$F$/$O(T)$/$I$）+ `exact_case_derivation.py` / `budget_curve_derivation.py` / `generalization_stats.py`（正文 02/03/04 章的推导链核验） |
 | [`lean/`](lean/) | Lean 4 形式化规格（本机无工具链，未编译；不放入伪装的 `.lean`） |
 | [`notes/`](notes/) | 支撑底稿：文献综述、公式推导、题库设定统计（来自团队，原始引用路径在文中） |
 

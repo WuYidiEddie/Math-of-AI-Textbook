@@ -2,3 +2,4 @@
 *.zip
 _smoke*.jsonl
 __pycache__/
+verification/*_run.log

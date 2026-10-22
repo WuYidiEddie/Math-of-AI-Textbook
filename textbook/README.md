@@ -107,7 +107,7 @@
 |---|---|
 | `00-cheatsheet.md` | 一页纸：四项分解、谱滤波、判定流程、常见坑 |
 | `01-what-training-is.md` | 训练到底在做什么？为什么训练误差为 0 不代表验证好？ |
-| `02-exact-case.md` | 线性/核表达式：验证误差怎么精确算？零空间地板、可学窗口 |
+| `02-exact-case.md` | 线性/核表达式：验证误差怎么精确算？**逐步推导**（平方损失→梯度→线性递推→谱分解→零空间→两个地板）、可学窗口 |
 | `03-budget-and-curves.md` | 为什么 $T$ 和 lr 决定短预算成败？plateau、EoS、early stopping |
 | `04-generalization-and-validation.md` | $p>n$ 为什么不一定坏？double descent 什么时候适用？验证集怎么比才可信？ |
 | `05-function-and-architecture.md` | 目标函数的结构如何决定深度/宽度？$n$-width 和信息极限 |

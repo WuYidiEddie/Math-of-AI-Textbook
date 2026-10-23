@@ -11,6 +11,7 @@
 | [`bigram-estimation.md`](bigram-estimation.md) | bigram 族测试 CE 的 H+A+I+O(T)+F 分解：熵地板、plug-in 估计地板（渐近公式 + 精确二项）、查表 softmax GD 的凸优化界、秩瓶颈、300 候选对照 | ✅ 2026-10-20 新增；数值验证 `../verification/bigram_estimation.py`（P1–P3 PASS） |
 | [`kb-explained.md`](kb-explained.md) | knowledge_base 六族经验律 → A/I/O/F 理论对象的逐条映射（已解释/部分解释/未解释 + 诚实清单） | ✅ 2026-10-20 新增；定量裁决依赖 `../verification/theory_answerer.py` |
 | [`closed-loop-phenomena.md`](closed-loop-phenomena.md) | 「最小闭环」文档现象的理论解释：截断基线/等价算力、翻转题、RL 坍缩、KB 积累；含 dataflip 复算 | ✅ 2026-10-21 新增 |
+| [`related-papers-2026-10-23.md`](related-papers-2026-10-23.md) | 相关论文普查（arXiv 六方向 + 数学期刊综述）：同类纲领、谱正则化母体文献、lit-survey 未覆盖的新增条目与行动建议 | ✅ 2026-10-23 新增 |
 
 **说明**：
 

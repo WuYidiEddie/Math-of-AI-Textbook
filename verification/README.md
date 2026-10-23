@@ -22,7 +22,8 @@
 | `generalization_stats.py` / `generalization_stats_result.md` | 核验正文 04 章：double descent 期望 $\mathbb E R_{\mathrm{te}}=\sigma^2\frac{\max(p,n)-1}{\lvert p-n\rvert-1}$（两侧同一估计器：最小范数插值器，SVD 稳定计算）、信号项 $(1-1/\gamma)\lVert\theta^\ast\rVert^2+\sigma^2n/(p-n-1)$、阈值处期望发散而单次实现有限（重尾）、配对 vs 独立 SE、测试集噪声在配对差里的抵消、验证集复用偏差 $\sqrt{2\log K}$ 上界 |
 | `four_decomposition.py` / `four_decomposition_result.md` / `.json` | 核验正文 01 章：在 dev 半边真题 `q_11b94d` 上复刻官方协议，把 $A$/$F$/$O(T)$/$I$ 逐项测出来——平方损失 = 高斯似然（恒等式）、总体最优 = 条件均值（残差 = $\sigma^2$）、折角目标的 Runge 现象（$A$ 在训练误差里不可见）、$p>n$ 的 min-norm 零空间地板（3.224487 vs $p<n$ 的 0）、10 seeds 复算与官方 audit 对齐、学习曲线（256→4096 步，$O(T)$ 主导）、初始 NTK 谱 + 谱窗口 + 惰性极限**近**插值解（截断 SVD，含 $\mathrm{cond}(K)$）+ 核漂移、宽度扫描 $w\in\{96,192,384\}$ |
 | `zero_space_init.py` / `zero_space_init_result.md` / `.json` | 核验正文 02 章 §6.4–6.5：零空间投影**是不是被强制的**——合成线性模型上逐优化器测 $\lVert P_{\rm null}\theta_T-P_{\rm null}\theta_0\rVert$（纯 GD / minibatch SGD 精确守恒到机器精度；weight decay 主动缩、实测比 $0.9552$ 对预测 $(1-\eta\lambda)^T=0.9552$；Adam 漏出行空间、漂移 $59\%$）；初始化税（训练误差看不见、测试误差洗不掉，且轨迹之差精确等于 $\Phi_{\rm te}P_{\rm null}\theta_0$）；v1.5 真题 `q_11b94d` 上 AdamW 的衰减因子、官方预算下的实测漂移（A 2.3% / C 0.95%）、惰性极限初始化税（A $1.5\times10^{-5}$ / C $4.7\times10^{-4}$，后者大于 C 的官方测试误差但特征学习把它跑破） |
-| `second_order_pilot.py` / `second_order_pilot_result.md` / `.json` | **M4 试点：二阶切模型能不能翻对非惰性错题**。把替身升到 $f\approx f_0+Jd+\tfrac12 d^\top Hd$（$H$ 用有限差分——SiLU 不支持 forward-mode 二阶导），在 4 道 dev 半边回归题上同 seed 跑"真实 / 一阶 / 二阶"。结果：**朴素二阶替身在官方 lr 下不稳定**（非凸四次式，约一半候选发散/爆）；**稳定化（小 lr）后翻对 2 道错题**（q_ab8774、q_0b5a9f）但对 lr 稳健性敏感、对强非惰性题 q_0525ce 仍失败、绝对预测比一阶差。**结论：朴素二阶替身不是可靠升级** |
+| `second_order_pilot.py` / `second_order_pilot_result.md` / `.json` | **M4 试点（四次式路线）：二阶切模型能不能翻对非惰性错题**。把替身升到 $f\approx f_0+Jd+\tfrac12 d^\top Hd$（$H$ 用有限差分——SiLU 不支持 forward-mode 二阶导），在 4 道 dev 半边回归题上同 seed 跑"真实 / 一阶 / 二阶"。结果：**朴素二阶替身在官方 lr 下不稳定**（非凸四次式，约一半候选发散/爆）；**稳定化（小 lr）后翻对 2 道错题**（q_ab8774、q_0b5a9f）但对 lr 稳健性敏感、对强非惰性题 q_0525ce 仍失败、绝对预测比一阶差。**结论：朴素二阶替身不是可靠升级** |
+| `moving_linearization_pilot.py` / `moving_linearization_pilot_result.md` / `.json` | **M4 试点（核修正路线 a，稳定版）：移动线性化**。沿轨迹每 steps/$S$ 步重算一次 Jacobian（刷新核），每段是**凸**线性模型，不会发散。$S$ 是从惰性（$S=1$）到真实训练（$S=$ 步数）的拨盘；终点用真实网络在 $\theta_{\rm final}$ 处求值（不训练真网）。**一致性证明**：$S=$ 步数时逐位复现真实训练（误差 $\sim10^{-6}$）。4 道 dev 半边题上 **$S=64$ 把全部 4 个赢家都翻对**（含一阶答错的 3 道），且绝对值逼近真实；$S$ 拨盘还顺带量出"每题需要多少特征学习"（q_8f876c 惰性 $S=1$ 即可，q_ab8774 需 $S\approx16$，q_0b5a9f/q_0525ce 需 $S\approx64$） |
 | `architecture_approximation.py` / `architecture_approximation_result.md` / `.json` | 核验正文 05 章：$A$ 的第一个度量（类内 $L^2$ 误差 = 正交投影，QR 实现；三类表达式 × 六类目标 + 固定预算下"可负担次数随维度崩塌" 119→14→4）、真实族上分离 $A$ 与 $O(T)$（spiral/xor 的 depth×width 网格 + $1/4$、$1\times$、$4\times$ 三档预算）、失败的合成对照及其分辨率地板诊断（S2b）、信息极限 $n^{-s/d}$（闭式壳计数 vs 暴力计数、实测斜率 vs 预测 $-s/d$、高斯核 $E_n=\sqrt{\lambda_{n+1}}$）、惰性区的 $A$（初始 NTK、学习窗口 $\eta\lambda_jT\gtrsim1$、最小范数权重 $\frac1n\sum_j b_j^2/\lambda_j$、GP 后验方差恒等式：解析 $1.076\times10^{-3}$ vs 实测 $2.210\times10^{-3}$）、六个族的目标画像（回归的类内逼近误差 + 分类的 LOO 岭次数曲线） |
 
 ## 复现
@@ -41,7 +42,8 @@ python "Math of AI Textbook\verification\four_decomposition.py"          # 约 1
 python "Math of AI Textbook\verification\four_decomposition.py" --quick  # 冒烟版（2 seeds、短预算）
 python "Math of AI Textbook\verification\zero_space_init.py"             # 约 5 分钟（S1/S2 合成 + S3 真题 Jacobian）
 python "Math of AI Textbook\verification\zero_space_init.py" --syn-only  # 冒烟版（只跑 S1/S2 合成，秒级）
-python "Math of AI Textbook\verification\second_order_pilot.py"          # M4 试点：约 3 分钟（4 道 dev 半边回归题）
+python "Math of AI Textbook\verification\second_order_pilot.py"          # M4 试点（四次式路线）：约 3 分钟
+python "Math of AI Textbook\verification\moving_linearization_pilot.py"  # M4 试点（核修正路线 a）：约 2 分钟
 python "Math of AI Textbook\verification\architecture_approximation.py"          # 约 15 分钟（含 xor 4x 预算的长训练）
 python "Math of AI Textbook\verification\architecture_approximation.py" --quick  # 冒烟版
 python "Math of AI Textbook\verification\theory_answerer.py" --limit-per-family 2   # 冒烟

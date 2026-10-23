@@ -121,6 +121,7 @@ $$
 | [`verification/`](verification/) | `verify_symbolic.py`（SymPy 精确验证 10 条代数骨架）+ `lazy_probe.py`（真实 v1.5 候选的 NTK 变化探针）+ `four_decomposition.py`（在真题 q_11b94d 上逐项测量 $A$/$F$/$O(T)$/$I$）+ `exact_case_derivation.py` / `budget_curve_derivation.py` / `generalization_stats.py`（正文 02/03/04 章的推导链核验）+ `architecture_approximation.py`（正文 05 章：$A$ 的正交投影闭式、$n^{-s/d}$ 的格点计数、真实族上分离 $A$ 与 $O(T)$、惰性区的最小范数权重与 GP 后验方差恒等式）+ `zero_space_init.py`（正文 02 章 §6.4–6.5：零空间投影的守恒是不是被强制的——逐优化器实测 drift、初始化税、AdamW 在 v1.5 真题上的漂移） |
 | [`lean/`](lean/) | Lean 4 形式化规格（本机无工具链，未编译；不放入伪装的 `.lean`） |
 | [`notes/`](notes/) | 支撑底稿：文献综述、公式推导、题库设定统计（来自团队，原始引用路径在文中） |
+| [`related-work/`](related-work/) | 相关论文存档（32 篇 PDF，2026-10-23 检索）：同类纲领、谱正则化母体文献、EoS 严格化进展；结论见目录内 README |
 
 **阅读顺序**：随手读 → [`textbook/README.md`](textbook/README.md)（人话版）；完整数学 → README → 01 → 02 → 03 → 04 → 05。若只关心"能不能解题"，直接读 `textbook/07-case-studies.md` + 05 §4。
 

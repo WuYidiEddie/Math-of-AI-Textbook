@@ -97,7 +97,7 @@ $$
 | 日期 | 预测器版本 | 全题库（500 题） | **test 半区（258 题）** | dev 半区（242 题） | 备注 |
 |---|---|---|---|---|---|
 | 2026-10-21 | v1 惰性线性化（seed 0；48 题为 3-seed 均值） | 83.2%（416/500） | **85.7%**（221/258） | 80.6%（195/242） | 基线：随机 33.3%、max-lr 启发式 53.0%、KB 经验律自报 74–88%、标签天花板 98.5% |
-| 2026-10-24 | M4 移动二阶 $S=16$ + 非有限回退（bigram 沿用 v1） | 完整题 85.5%（423/495）；**500 保守 84.6%**（423/500） | 完整题 87.0%（221/254）；**258 保守 85.7%**（221/258） | 完整题 83.8%（202/241）；242 保守 83.5%（202/242） | 5 题二阶/一阶均非有限；同 495 题比 v1 多对 10 题、test 多对 3 题，但保守 test 与 v1 持平 |
+| 2026-10-24 | M4 移动二阶 $S=16$ + 数值回退链（bigram 沿用 v1） | **85.4%**（427/500） | **86.8%**（224/258） | 83.9%（203/242） | 比 v1 多对 11 题、test 多对 3 题；36 次 $S=16$ 一阶回退、4 次 $S=1$、1 候选逐步真实协议回退 |
 
 外部题库（真·OOS，未参与任何开发）：
 
@@ -105,7 +105,7 @@ $$
 |---|---|---|---|
 | 2026-10-21 | dataflip_v1_strict（49 题，strict 翻转，标签噪声≈0） | **49.0%**（24/49） | spiral 10/10、mvar 9/10、tabular **0/9**（系统性反转）；≈ 实测 10% 截断基线（44–53%）；分析见 `verification/dataflip_result.md` |
 
-v1 分族（全题库）：spiral 92.0% / tabular 86.0% / univar 85.0% / mvar 85.0% / bigram 76.0% / xor 76.0%；分题型：optimizer_only 88.1% > mixed 82.7% > architecture_only 78.8%。已证伪的改进方向：预测侧多种子（M0，48 题试点 argmin 翻转 0/48，见 `verification/m0_multiseed_result.md`）。M4 的完整/保守/同题配对结果见 `verification/moving_second_order_s16_500_result.md`。
+v1 分族（全题库）：spiral 92.0% / tabular 86.0% / univar 85.0% / mvar 85.0% / bigram 76.0% / xor 76.0%；分题型：optimizer_only 88.1% > mixed 82.7% > architecture_only 78.8%。已证伪的改进方向：预测侧多种子（M0，48 题试点 argmin 翻转 0/48，见 `verification/m0_multiseed_result.md`）。M4 的最终完整与同题配对结果见 `verification/moving_second_order_s16_500_final_result.md`。
 
 复现：`python verification/theory_answerer.py --skip-done`（可续跑）+ `python verification/theory_answerer_eval.py`。
 

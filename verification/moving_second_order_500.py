@@ -2,8 +2,8 @@
 
 Frozen rule before the full run:
   * non-bigram: moving second-order tangent model with S=16, seed 0;
-  * iff its final real-network test metric is nonfinite, rerun moving FIRST order at S=16
-    and use that metric instead;
+  * iff its final real-network test metric is nonfinite, rerun moving FIRST order at S=16,
+    then S=1; use finite v1 if available, otherwise moving first order at S=64 and S=steps;
   * bigram: retain the existing initialization-linearized theory_answerer predictions,
     because explicit output Jacobians/Hessian terms are too large for B x L x V outputs.
 
@@ -34,9 +34,9 @@ SEED = 0
 ONLINE_JAC_ELEMENTS = 1e8
 
 
-def load_base_records():
+def load_base_records(path):
     records = defaultdict(list)
-    with open(BASE_OUT, encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         for line in fh:
             r = json.loads(line)
             if not r.get("skipped"):
@@ -61,6 +61,8 @@ def load_done(path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=str(DEFAULT_OUT))
+    ap.add_argument("--base-jsonl", default=str(BASE_OUT))
+    ap.add_argument("--pack", default="")
     ap.add_argument("--skip-done", action="store_true")
     ap.add_argument("--families", default="")
     ap.add_argument("--limit-per-family", type=int, default=0)
@@ -70,18 +72,22 @@ def main():
     wanted_qids = {s for s in args.qids.split(",") if s} or None
     out_path = Path(args.out)
     done = load_done(out_path) if args.skip_done else set()
-    base_records = load_base_records()
-    print(f"rule: moving second order S={S}, seed={SEED}; nonfinite -> moving first order S={S}")
-    print(f"bigram: existing initialization-linearized predictions from {BASE_OUT.name}")
+    base_records = load_base_records(args.base_jsonl)
+    pack = Path(args.pack) if args.pack else None
+    data_root = pack if pack else ta.DATA
+    print(f"rule: moving second order S={S}, seed={SEED}; nonfinite -> moving first S={S} -> S1 -> v1/S64/Ssteps")
+    print(f"bigram: existing initialization-linearized predictions from {args.base_jsonl}")
+    if pack:
+        print(f"external question pack: {pack}")
     print(f"skip-done: {len(done)} candidate-seed records", flush=True)
 
-    n_done = n_fallback = n_bigram = 0
+    n_done = n_fallback = n_s1 = n_bigram = 0
     with open(out_path, "a", encoding="utf-8", newline="\n") as out:
-        for fam, qpath, q in ta.iter_questions(args.limit_per_family, families):
+        for fam, qpath, q in ta.iter_questions(args.limit_per_family, families, pack=pack):
             qid = q["question_id"]
             if wanted_qids and qid not in wanted_qids:
                 continue
-            base = ta.DATA / "datasets" / fam / q["dataset_id"]
+            base = data_root / "datasets" / fam / q["dataset_id"]
             train = torch.load(base / "train.pt", map_location="cpu", weights_only=True)
             test = torch.load(base / "test.pt", map_location="cpu", weights_only=True)
             for ch in q["choices"]:
@@ -112,7 +118,7 @@ def main():
 
                 if (qid, letter, SEED) in done:
                     continue
-                cdir = ta.DATA / ch["candidate_path"]
+                cdir = data_root / ch["candidate_path"]
                 Model = ta.load_module(cdir / "model.py", f"full_{ch['candidate_id']}").Model
                 spec = json.loads((cdir / "candidate_spec.json").read_text(encoding="utf-8"))
                 probe = Model()
@@ -130,6 +136,7 @@ def main():
                             Model, spec, train, test, SEED, S)
                     source = "moving_second_S16_online" if online else "moving_second_S16"
                     first_metric = None
+                    v1_metric = None
                     second_metric = m2 if math.isfinite(m2) else None
                     if math.isfinite(m2):
                         pred = m2
@@ -142,12 +149,45 @@ def main():
                                 Model, spec, train, test, SEED, S)
                         source = ("fallback_first_S16_online_nonfinite_second" if online
                                   else "fallback_first_S16_nonfinite_second")
-                        first_metric = pred
+                        first_metric = pred if math.isfinite(pred) else None
                         n_fallback += 1
                     if not math.isfinite(pred):
-                        raise FloatingPointError("both second-order and first-order metrics nonfinite")
+                        if online:
+                            pred, _, _ = mso.run_moving_online(
+                                Model, spec, train, test, SEED, 1, order=1)
+                        else:
+                            pred, _ = mlp.run_moving_linearization(
+                                Model, spec, train, test, SEED, 1)
+                        source = "fallback_first_S1_nonfinite_moving"
+                        n_s1 += 1
+                    if not math.isfinite(pred):
+                        v1_records = [old for old in base_records.get((qid, letter), [])
+                                      if old["seed"] == SEED and math.isfinite(old["pred_metric"])]
+                        if v1_records:
+                            pred = v1_records[0]["pred_metric"]
+                            source = "fallback_v1_nonfinite_moving"
+                            v1_metric = pred
+                        else:
+                            if online:
+                                pred, _, _ = mso.run_moving_online(
+                                    Model, spec, train, test, SEED, 64, order=1)
+                            else:
+                                pred, _ = mlp.run_moving_linearization(
+                                    Model, spec, train, test, SEED, 64)
+                            source = "fallback_first_S64_nonfinite_moving_and_v1"
+                    if not math.isfinite(pred):
+                        steps = int(spec["budget"]["training_steps"])
+                        if online:
+                            pred, _, _ = mso.run_moving_online(
+                                Model, spec, train, test, SEED, steps, order=1)
+                        else:
+                            pred, _ = mlp.run_moving_linearization(
+                                Model, spec, train, test, SEED, steps)
+                        source = "fallback_first_S_steps_effective_real_training"
+                    if not math.isfinite(pred):
+                        raise FloatingPointError("all surrogate and per-step fallback metrics nonfinite")
                     r = dict(pred_metric=pred, second_metric=second_metric,
-                             first_metric=first_metric, prediction_source=source,
+                             first_metric=first_metric, v1_metric=v1_metric, prediction_source=source,
                              second_order_applied=True, dnorm=dnorm if math.isfinite(dnorm) else None,
                              p=p_total,
                              opt=spec["optimizer"]["type"], lr=spec["optimizer"]["lr"],
@@ -166,7 +206,7 @@ def main():
                       r["prediction_source"], flush=True)
             n_done += 1
             print(f"[done] {n_done} questions ({qid}); fallbacks={n_fallback}; "
-                  f"bigram records={n_bigram}", flush=True)
+                  f"S1={n_s1}; bigram records={n_bigram}", flush=True)
 
 
 if __name__ == "__main__":

@@ -101,14 +101,75 @@ def run_moving_second_order(Model, spec, train, test, seed: int, S: int):
             d = theta.detach() - theta_s
             pred = f_s[idx] + torch.einsum("bcp,p->bc", J_s[idx], d)
             pred = pred + quad_term(d, tx[idx], f_s[idx])
-            gp = ta.loss_grad_pred(pred, ty[idx].reshape(bs, C), loss_id).reshape(bs, C)
+            gp = ta.loss_grad_pred(pred, ty[idx], loss_id).reshape(bs, C)
             g = torch.einsum("bcp,bc->p", J_s[idx], gp)
             theta.grad = g + grad_hvp(d, tx[idx], gp)
             opt.step()
 
     with torch.no_grad():
         pred_te = f(theta.detach(), vx).reshape(vx.shape[0], -1)
-        m = ta.metric_of(pred_te, vy.reshape(vx.shape[0], pred_te.shape[1]), loss_id)
+        m = ta.metric_of(pred_te, vy, loss_id)
+        dnorm = float((theta.detach() - theta0).norm())
+    return m, dnorm, time.time() - t0
+
+
+def run_moving_online(Model, spec, train, test, seed: int, S: int, order: int = 2):
+    """Memory-bounded moving tangent model for large non-bigram candidates."""
+    t0 = time.time()
+    sop.reset_rng(seed)
+    model = Model().double()
+    shapes = [tuple(p.shape) for p in model.parameters()]
+    sizes = [int(p.numel()) for p in model.parameters()]
+    theta0 = ta.theta_vector(model).detach()
+    f = ta.make_f_of_theta(model, shapes, sizes)
+    tx = train["x"].double()
+    ty = train["y"].double()
+    vx = test["x"].double()
+    vy = test["y"].double()
+    n = tx.shape[0]
+    loss_id = spec["loss"]["loss_id"]
+    steps = int(spec["budget"]["training_steps"])
+    bs = int(spec["budget"]["batch_size"])
+    theta = theta0.clone().requires_grad_(True)
+    opt = ta.build_optimizer_from_spec(theta, spec["optimizer"])
+    chunks = [steps // S + (1 if i < steps % S else 0) for i in range(S)]
+
+    def grad_dot(th, xb, gp):
+        t = th.clone().requires_grad_(True)
+        return torch.autograd.grad((gp * f(t, xb)).sum(), t)[0]
+
+    for ns in chunks:
+        theta_s = theta.detach().clone()
+        with torch.no_grad():
+            f_s = f(theta_s, tx).reshape(n, -1)
+        C = f_s.shape[1]
+        for _ in range(ns):
+            idx = torch.randint(0, n, (bs,))
+            xb = tx[idx]
+            f0b = f_s[idx]
+            d = theta.detach() - theta_s
+            if float(d.norm()) < 1e-12:
+                pred = f0b
+                d_is_zero = True
+            else:
+                d_is_zero = False
+                with torch.no_grad():
+                    fp = f(theta_s + EPS * d, xb).reshape(bs, C)
+                    fm = f(theta_s - EPS * d, xb).reshape(bs, C)
+                pred = f0b + (fp - fm) / (2.0 * EPS)
+                if order == 2:
+                    pred = pred + (fp - 2.0 * f0b + fm) / (2.0 * EPS * EPS)
+            gp = ta.loss_grad_pred(pred, ty[idx], loss_id).reshape(bs, C)
+            g = grad_dot(theta_s, xb, gp)
+            if order == 2 and not d_is_zero:
+                g = g + (grad_dot(theta_s + EPS * d, xb, gp)
+                         - grad_dot(theta_s - EPS * d, xb, gp)) / (2.0 * EPS)
+            theta.grad = g
+            opt.step()
+
+    with torch.no_grad():
+        pred_te = f(theta.detach(), vx).reshape(vx.shape[0], -1)
+        m = ta.metric_of(pred_te, vy, loss_id)
         dnorm = float((theta.detach() - theta0).norm())
     return m, dnorm, time.time() - t0
 

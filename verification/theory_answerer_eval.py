@@ -8,7 +8,7 @@
 #   * feature-learning gap: |pred_metric - measured mean_metric| distribution per family;
 #   * calibration on knife-edge questions (paired significance from bank-audit std_metric).
 #
-# Usage: python verification/theory_answerer_eval.py [--jsonl verification/theory_answerer.jsonl]
+# Usage: python verification/theory_answerer_eval.py [--jsonl ...] [--out ...] [--method-note ...]
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ import argparse
 import csv
 import json
 import math
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -53,6 +53,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--jsonl", default=str(HERE / "theory_answerer.jsonl"))
     ap.add_argument("--out", default=str(HERE / "theory_answerer_result.md"))
+    ap.add_argument("--compare-to", default="", help="optional baseline JSONL for same-question paired accuracy")
+    ap.add_argument("--method-note", default=(
+        "每个候选 = 初始化处的切线性化模型（NTK/lazy），跑**官方原协议**（同 seed 初始化、同 "
+        "minibatch 序列、同优化器配置、同步数），取其测试指标作为预测。回归/分类用显式 Jacobian"
+        "（测试侧 256–512 点子采样）；bigram 用在线 FD-JVP/VJP 变体。多 seed 预测取均值。"))
     args = ap.parse_args()
 
     measured = {}  # (qid, letter) -> (mean_metric, std_metric)
@@ -67,13 +72,17 @@ def main():
     raw = defaultdict(list)    # (qid, letter) -> [pred_metric per seed]
     meta = {}
     skipped = defaultdict(int)
+    sources = Counter()
+    all_qids = set()
     with open(args.jsonl, encoding="utf-8") as f:
         for line in f:
             r = json.loads(line)
+            all_qids.add(r["qid"])
             if r.get("skipped"):
                 skipped[r["skipped"].split(":")[0]] += 1
                 continue
             raw[(r["qid"], r["letter"])].append(r["pred_metric"])
+            sources[r.get("prediction_source", "initialization_linearized")] += 1
             meta.setdefault(r["qid"], r)
     for (qid, letter), vals in raw.items():
         base = dict(meta[qid])
@@ -132,20 +141,52 @@ def main():
 
     for r in results:
         r["split"] = split_of(r["qid"])
+    incomplete_qids = all_qids - {r["qid"] for r in results}
+    comparison = None
+    if args.compare_to:
+        baseline_raw = defaultdict(list)
+        with open(args.compare_to, encoding="utf-8") as f:
+            for line in f:
+                r = json.loads(line)
+                if not r.get("skipped"):
+                    baseline_raw[(r["qid"], r["letter"])].append(r["pred_metric"])
+        baseline = defaultdict(dict)
+        for (qid, letter), vals in baseline_raw.items():
+            baseline[qid][letter] = sum(vals) / len(vals)
+        comparison = {}
+        for split in ("all", "dev", "test"):
+            pairs = []
+            for r in results:
+                if split != "all" and r["split"] != split:
+                    continue
+                cand = baseline.get(r["qid"])
+                if not cand or len(cand) < 3:
+                    continue
+                baseline_hit = min(cand, key=cand.get) == r["truth"]
+                pairs.append((baseline_hit, r["hit"]))
+            comparison[split] = dict(
+                n=len(pairs),
+                baseline=sum(b for b, h in pairs),
+                current=sum(h for b, h in pairs),
+                improved=sum(not b and h for b, h in pairs),
+                regressed=sum(b and not h for b, h in pairs),
+            )
 
     lines = []
     lines.append("# theory_answerer 评估结果\n")
     lines.append(
-        "> 方法：每个候选 = 初始化处的切线性化模型（NTK/lazy），跑**官方原协议**（同 seed 初始化、同 "
-        "minibatch 序列、同优化器配置、同步数），取其测试指标作为预测。回归/分类用显式 Jacobian"
-        "（测试侧 256–512 点子采样）；bigram 用在线 FD-JVP/VJP 变体。多 seed 预测取均值。\n"
+        f"> 方法：{args.method_note}\n"
         "> **out-of-sample 纪律**：预测器零拟合（没有任何系数从题库学出）。为防止「看错题改方法」的"
         "自适应污染，题库按 qid 哈希固定切成 dev/test 两半——失败分析只在 dev 半区做，"
         "**headline 数字是 test 半区准确率**。\n"
     )
     lines.append(f"- 候选记录：{sum(len(c) for c in preds.values())}；题目（3 候选齐全）：{len(results)}")
+    if set(sources) != {"initialization_linearized"}:
+        lines.append(f"- 候选-seed 记录来源：{dict(sources)}")
     if skipped:
         lines.append(f"- 跳过：{dict(skipped)}")
+    if incomplete_qids:
+        lines.append(f"- 三候选不完整：{len(incomplete_qids)} 题；不计入上述 top-1 分母")
     lines.append(f"- 随机基线：33.3%；KB 自报同分布约 74–88%（pack-01..04），标签天花板 98.5%\n")
 
     overall = acc(results)
@@ -155,6 +196,27 @@ def main():
     lines.append("### out-of-sample 切分（qid 哈希固定，失败分析只许在 dev 半区做）\n")
     lines.append(f"- **test 半区（headline OOS 数字）：{acc(test_rs):.1%}**（{sum(r['hit'] for r in test_rs)}/{len(test_rs)}）")
     lines.append(f"- dev 半区（允许迭代）：{acc(dev_rs):.1%}（{sum(r['hit'] for r in dev_rs)}/{len(dev_rs)}）\n")
+    if incomplete_qids:
+        incomplete_splits = Counter(split_of(qid) for qid in incomplete_qids)
+        lines.append("### 保守覆盖口径（不完整题全部计错）\n")
+        lines.append(f"- 全部题：{(sum(r['hit'] for r in results) / len(all_qids)):.1%}"
+                     f"（{sum(r['hit'] for r in results)}/{len(all_qids)}）")
+        for split, rs in (("test", test_rs), ("dev", dev_rs)):
+            denominator = len(rs) + incomplete_splits[split]
+            lines.append(f"- {split}：{(sum(r['hit'] for r in rs) / denominator):.1%}"
+                         f"（{sum(r['hit'] for r in rs)}/{denominator}；不完整 {incomplete_splits[split]} 题）")
+        lines.append("")
+
+    if comparison:
+        lines.append(f"### 与 `{Path(args.compare_to).name}` 的同题配对比较\n")
+        lines.append("只使用两种方法都有三候选预测的题目；+ = 对照错→当前对，− = 对照对→当前错。\n")
+        lines.append("| 切分 | n | 对照 | 当前 | 翻转 +/− |")
+        lines.append("|---|---:|---:|---:|---:|")
+        for split, label in (("all", "全部"), ("dev", "dev"), ("test", "test")):
+            c = comparison[split]
+            lines.append(f"| {label} | {c['n']} | {c['baseline']} | {c['current']} | "
+                         f"+{c['improved']}/−{c['regressed']} |")
+        lines.append("")
 
     lines.append("## 按族\n")
     lines.append("| 族 | n 题 | top-1 | 平均 Spearman ρ（预测 vs 实测） | 特征学习差中位 | 刀刃题占比 |")

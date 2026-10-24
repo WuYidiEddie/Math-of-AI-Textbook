@@ -84,12 +84,12 @@ def run_moving_linearization(Model, spec, train, test, seed: int, S: int):
             idx = torch.randint(0, n, (bs,))
             d = theta.detach() - theta_s
             pred = f_s[idx] + torch.einsum("bcp,p->bc", J_s[idx], d)
-            gp = ta.loss_grad_pred(pred, ty[idx].reshape(bs, C), loss_id).reshape(bs, C)
+            gp = ta.loss_grad_pred(pred, ty[idx], loss_id).reshape(bs, C)
             theta.grad = torch.einsum("bcp,bc->p", J_s[idx], gp)
             opt.step()
     with torch.no_grad():
         pred_te = f(theta.detach(), vx).reshape(vx.shape[0], -1)
-        m = ta.metric_of(pred_te, vy.reshape(vx.shape[0], pred_te.shape[1]), loss_id)
+        m = ta.metric_of(pred_te, vy, loss_id)
     return m, time.time() - t0
 
 

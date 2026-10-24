@@ -97,6 +97,7 @@ $$
 | 日期 | 预测器版本 | 全题库（500 题） | **test 半区（258 题）** | dev 半区（242 题） | 备注 |
 |---|---|---|---|---|---|
 | 2026-10-21 | v1 惰性线性化（seed 0；48 题为 3-seed 均值） | 83.2%（416/500） | **85.7%**（221/258） | 80.6%（195/242） | 基线：随机 33.3%、max-lr 启发式 53.0%、KB 经验律自报 74–88%、标签天花板 98.5% |
+| 2026-10-24 | M4 移动二阶 $S=16$ + 非有限回退（bigram 沿用 v1） | 完整题 85.5%（423/495）；**500 保守 84.6%**（423/500） | 完整题 87.0%（221/254）；**258 保守 85.7%**（221/258） | 完整题 83.8%（202/241）；242 保守 83.5%（202/242） | 5 题二阶/一阶均非有限；同 495 题比 v1 多对 10 题、test 多对 3 题，但保守 test 与 v1 持平 |
 
 外部题库（真·OOS，未参与任何开发）：
 
@@ -104,7 +105,7 @@ $$
 |---|---|---|---|
 | 2026-10-21 | dataflip_v1_strict（49 题，strict 翻转，标签噪声≈0） | **49.0%**（24/49） | spiral 10/10、mvar 9/10、tabular **0/9**（系统性反转）；≈ 实测 10% 截断基线（44–53%）；分析见 `verification/dataflip_result.md` |
 
-分族（全题库）：spiral 92.0% / tabular 86.0% / univar 85.0% / mvar 85.0% / bigram 76.0% / xor 76.0%；分题型：optimizer_only 88.1% > mixed 82.7% > architecture_only 78.8%。已证伪的改进方向：预测侧多种子（M0，48 题试点 argmin 翻转 0/48，见 `verification/m0_multiseed_result.md`）。
+v1 分族（全题库）：spiral 92.0% / tabular 86.0% / univar 85.0% / mvar 85.0% / bigram 76.0% / xor 76.0%；分题型：optimizer_only 88.1% > mixed 82.7% > architecture_only 78.8%。已证伪的改进方向：预测侧多种子（M0，48 题试点 argmin 翻转 0/48，见 `verification/m0_multiseed_result.md`）。M4 的完整/保守/同题配对结果见 `verification/moving_second_order_s16_500_result.md`。
 
 复现：`python verification/theory_answerer.py --skip-done`（可续跑）+ `python verification/theory_answerer_eval.py`。
 
@@ -120,7 +121,7 @@ $$
 | [`03-frontier.md`](03-frontier.md) | 不可精确求解的前沿：逼近论（Barron/Sobolev/ReLU 区域/深度分离）、隐式偏置、算法稳定性、特征学习（lazy/rich、mean-field、μP）、分类 margin 与 CE；哪些是定理、哪些是 open problem |
 | [`04-benchmark-testbed.md`](04-benchmark-testbed.md) | 用 v1.5 题库做 testbed：六个族的 $f$/$\mathcal G$ 性质、理论预测的 dominant term、可计算 pipeline（初始化 NTK + 目标谱 + 滤波）、与旧 empirical law 的关系、可证伪检验 |
 | [`05-formalization-and-coverage.md`](05-formalization-and-coverage.md) | **编码自查、机器验证、Lean 状态与"理论够不够解 v1.5"的诚实评估**；含两道代表题（`q_11b94d` / `q_aef977`）的 lazy 探针结果 |
-| [`verification/`](verification/) | `verify_symbolic.py`（SymPy 精确验证 10 条代数骨架）+ `lazy_probe.py`（真实 v1.5 候选的 NTK 变化探针）+ `four_decomposition.py`（在真题 q_11b94d 上逐项测量 $A$/$F$/$O(T)$/$I$）+ `exact_case_derivation.py` / `budget_curve_derivation.py` / `generalization_stats.py`（正文 02/03/04 章的推导链核验）+ `architecture_approximation.py`（正文 05 章：$A$ 的正交投影闭式、$n^{-s/d}$ 的格点计数、真实族上分离 $A$ 与 $O(T)$、惰性区的最小范数权重与 GP 后验方差恒等式）+ `zero_space_init.py`（正文 02 章 §6.4–6.5：零空间投影的守恒是不是被强制的——逐优化器实测 drift、初始化税、AdamW 在 v1.5 真题上的漂移）+ `second_order_pilot.py`（M4 试点·四次式路线：二阶切模型在官方 lr 下不稳定，不是可靠升级）+ `second_order_trust_pilot.py`（固定二阶加信赖域：消除 `NaN` 但三个统一半径仍只有 2/4，未改善排序）+ `moving_linearization_pilot.py`（M4 试点·核修正路线：移动线性化，凸且稳定，$S=64$ 把 4 道试点题全翻对；$S=$ 步数时逐位复现真实训练）+ `moving_second_order_pilot.py`（移动二阶：非有限时回退同 $S$ 一阶的 dev 事后混合规则在 $S=16$ 达 4/4，同 $S$ 一阶为 2/4；尚待新题验证） |
+| [`verification/`](verification/) | `verify_symbolic.py`（SymPy 精确验证 10 条代数骨架）+ `lazy_probe.py`（真实 v1.5 候选的 NTK 变化探针）+ `four_decomposition.py`（在真题 q_11b94d 上逐项测量 $A$/$F$/$O(T)$/$I$）+ `exact_case_derivation.py` / `budget_curve_derivation.py` / `generalization_stats.py`（正文 02/03/04 章的推导链核验）+ `architecture_approximation.py`（正文 05 章：$A$ 的正交投影闭式、$n^{-s/d}$ 的格点计数、真实族上分离 $A$ 与 $O(T)$、惰性区的最小范数权重与 GP 后验方差恒等式）+ `zero_space_init.py`（正文 02 章 §6.4–6.5：零空间投影的守恒是不是被强制的——逐优化器实测 drift、初始化税、AdamW 在 v1.5 真题上的漂移）+ `second_order_pilot.py`（M4 试点·四次式路线：二阶切模型在官方 lr 下不稳定，不是可靠升级）+ `second_order_trust_pilot.py`（固定二阶加信赖域：消除 `NaN` 但三个统一半径仍只有 2/4，未改善排序）+ `moving_linearization_pilot.py`（M4 试点·核修正路线：移动线性化，凸且稳定，$S=64$ 把 4 道试点题全翻对；$S=$ 步数时逐位复现真实训练）+ `moving_second_order_pilot.py`（移动二阶：非有限时回退同 $S$ 一阶的 dev 事后混合规则在 $S=16$ 达 4/4，同 $S$ 一阶为 2/4）+ `moving_second_order_500.py`（完整 500 题验证冻结的 $S=16$ 混合规则；大候选在线计算，bigram 保留原一阶） |
 | [`lean/`](lean/) | Lean 4 形式化规格（本机无工具链，未编译；不放入伪装的 `.lean`） |
 | [`notes/`](notes/) | 支撑底稿：文献综述、公式推导、题库设定统计（来自团队，原始引用路径在文中） |
 | [`related-work/`](related-work/) | 相关论文存档（32 篇 PDF，2026-10-23 检索）：同类纲领、谱正则化母体文献、EoS 严格化进展；结论见目录内 README |

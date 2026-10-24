@@ -69,14 +69,14 @@ $$
 **两尺度近似**（把模式分成"已学到"与"没学到"）：
 
 $$
-\boxed{\;
-R_{\rm te}(T)\;\approx\;
+\boxed{\quad
+R_{\rm te}(T)\quad\approx\quad
 \underbrace{\sum_{j:\ \eta\lambda_jT\ll 1}a_j^2}_{\text{还没学到的目标分量（}O\text{）}}
-\;+\;
+\quad+\quad
 \underbrace{\sum_{j\in\text{kernel tail}}a_j^2}_{\text{学不到的分量（}A\text{）}}
-\;+\;
+\quad+\quad
 \underbrace{F}_{\text{验证/种子噪声}}
-\;}
+\quad}
 $$
 
 - **可学窗口**：$T$ 步内能学到的模式是 $\eta\lambda_jT\gtrsim1$ 的那些；小 $\lambda_j$（高频/难方向）需要更多步。这就是 **spectral bias**，也是"预算 $T$"的精确含义。

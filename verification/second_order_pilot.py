@@ -118,7 +118,7 @@ def run_real(Model, spec, train, test, seed: int) -> float:
 
 
 def run_surrogate(Model, spec, train, test, seed: int, order: int, lr_mult: float = 1.0,
-                  track: bool = False):
+                  track: bool = False, trust_radius: float | None = None):
     """Train the order-1 / order-2 tangent surrogate under the official protocol.
 
     order 1 runs in float32 (matches theory_answerer exactly, for validation).
@@ -126,7 +126,8 @@ def run_surrogate(Model, spec, train, test, seed: int, order: int, lr_mult: floa
     resolvable; the H-terms use central finite differences (forward-mode AD through a
     second derivative is unsupported for SiLU, which these candidates use).
     lr_mult rescales the learning rate (a stabilization probe for the non-convex
-    quartic surrogate).  track=True also returns the test-metric curve + ||d||."""
+    quartic surrogate).  trust_radius projects d back into a ball around theta0 after
+    each optimizer step.  track=True also returns the test-metric curve + ||d||."""
     reset_rng(seed)
     model = Model()
     dtype = torch.float64 if order == 2 else torch.float32
@@ -198,6 +199,12 @@ def run_surrogate(Model, spec, train, test, seed: int, order: int, lr_mult: floa
             g = g + grad_hvp(d, tx[idx], gp)
         theta.grad = g
         opt.step()
+        if trust_radius is not None:
+            with torch.no_grad():
+                dd = theta - theta0
+                dn = dd.norm()
+                if dn > trust_radius:
+                    theta.copy_(theta0 + dd * (trust_radius / dn))
         if (step_i + 1) in cps:
             with torch.no_grad():
                 dd = theta.detach() - theta0

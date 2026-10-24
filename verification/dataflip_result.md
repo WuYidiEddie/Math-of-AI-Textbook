@@ -1,5 +1,7 @@
 # dataflip_v1_strict 真·OOS 评测与截断曲线
 
+> 后续对照（2026-10-24）：同一移动二阶及数值回退链达到 **67.3%（33/49）**，比本文 v1 的 49.0% 净多对 9 题；分族有升有降，见 `dataflip_moving_second_order_s16_result.md`。
+>
 > 日期：2026-10-21 ｜ 题库：`../../../bench_question_packs_20261020/dataflip_v1_strict`（49 题，strict dataset-flip，10-seed 完全分离、win_rate=1.0，标签噪声≈0）
 > 数据：`theory_answerer_dataflip.jsonl`（`--pack` 模式，seed 0，带 κ_path 漂移计与 21 点预算曲线）
 > 性质：**真·out-of-sample**——这批题与主 500 题库不同集、未参与任何方法开发。

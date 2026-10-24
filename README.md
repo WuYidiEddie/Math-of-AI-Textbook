@@ -103,7 +103,8 @@ $$
 
 | 日期 | 题库 | top-1 | 备注 |
 |---|---|---|---|
-| 2026-10-21 | dataflip_v1_strict（49 题，strict 翻转，标签噪声≈0） | **49.0%**（24/49） | spiral 10/10、mvar 9/10、tabular **0/9**（系统性反转）；≈ 实测 10% 截断基线（44–53%）；分析见 `verification/dataflip_result.md` |
+| 2026-10-21 | dataflip_v1_strict（49 题，strict 翻转，标签噪声≈0） | **49.0%**（24/49） | v1：spiral 10/10、mvar 9/10、tabular **0/9**（系统性反转）；≈ 实测 10% 截断基线（44–53%）；分析见 `verification/dataflip_result.md` |
+| 2026-10-24 | dataflip_v1_strict，M4 移动二阶 $S=16$ + 同一数值回退链 | **67.3%**（33/49） | 比 v1 净多对 9 题（+15/−6）；tabular 0/9→9/9、univar 1/10→6/10，但 spiral 10/10→5/10；bigram 沿用 v1；见 `verification/dataflip_moving_second_order_s16_result.md` |
 
 v1 分族（全题库）：spiral 92.0% / tabular 86.0% / univar 85.0% / mvar 85.0% / bigram 76.0% / xor 76.0%；分题型：optimizer_only 88.1% > mixed 82.7% > architecture_only 78.8%。已证伪的改进方向：预测侧多种子（M0，48 题试点 argmin 翻转 0/48，见 `verification/m0_multiseed_result.md`）。M4 的最终完整与同题配对结果见 `verification/moving_second_order_s16_500_final_result.md`。
 
